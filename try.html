@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>College Projects Showcase</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <style>
+    body {
+      background: #f0f2f5;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    .neon-button {
+      background: linear-gradient(45deg, #0ff, #0a9);
+      border: none;
+      color: white;
+      padding: 8px 20px;
+      border-radius: 25px;
+      box-shadow: 0 0 10px #0ff;
+      transition: box-shadow 0.3s ease-in-out;
+    }
+    .neon-button:hover {
+      box-shadow: 0 0 20px #0ff;
+    }
+    .glass-card {
+      background: rgba(255, 255, 255, 0.9);
+      box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+      backdrop-filter: blur(6px);
+      border-radius: 15px;
+      padding: 15px;
+      margin-bottom: 20px;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+    .neumorphic-card {
+      background: #e0e5ec;
+      border-radius: 20px;
+      box-shadow:
+        8px 8px 15px #a3b1c6,
+        -8px -8px 15px #ffffff;
+    }
+    .neumorphic-input {
+      border: none;
+      border-radius: 15px;
+      box-shadow:
+        inset 6px 6px 8px #bec8d2,
+        inset -6px -6px 8px #ffffff;
+      padding: 10px;
+      outline: none;
+      width: 100%;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 style="text-align: center;">College Projects </h2>
+    <button class="btn btn-primary" id="adminLoginBtn">Admin Login</button>
+    <button class="btn btn-danger d-none" id="adminLogoutBtn">Logout</button>
+  </div>
+
+  <div class="row mb-3">
+    <div class="col-md-4">
+      <input type="text" id="searchInput" class="form-control" placeholder="Search projects..." />
+    </div>
+    <div class="col-md-3">
+      <select id="categoryFilter" class="form-select">
+        <option value="">All Categories</option>
+        <option>AI</option>
+        <option>Web</option>
+        <option>MERN</option>
+        <option>MEAN</option>
+      </select>
+    </div>
+    <div class="col-md-3">
+      <select id="sortProjects" class="form-select">
+        <option value="">Sort By</option>
+        <option value="title">Title (A-Z)</option>
+        <option value="priceLow">Price (Low to High)</option>
+        <option value="priceHigh">Price (High to Low)</option>
+      </select>
+    </div>
+  </div>
+
+  <div id="homeScreen" class="row"></div>
+
+  <!-- Admin Modal Section -->
+  <div id="adminModal" class="modal fade" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content neumorphic-card p-4">
+        <div id="loginSection">
+          <h4 class="mb-3">Admin Login</h4>
+          <input type="text" id="adminUsername" class="form-control mb-2 neumorphic-input" placeholder="Username" />
+          <input type="password" id="adminPassword" class="form-control mb-3 neumorphic-input" placeholder="Password" />
+          <button class="neon-button w-100 mb-3" id="adminLoginSubmit">Login</button>
+        </div>
+
+        <div id="projectManageSection" class="d-none">
+          <h4 class="mb-3">Add New Project</h4>
+          <input type="text" id="projTitle" class="form-control mb-2 neumorphic-input" placeholder="Project Title" />
+          <input type="text" id="projImage" class="form-control mb-2 neumorphic-input" placeholder="Image URL" />
+          <input type="number" id="projPrice" class="form-control mb-2 neumorphic-input" placeholder="Price (₹)" />
+          <input type="number" id="projOldPrice" class="form-control mb-2 neumorphic-input" placeholder="Old Price (₹) (optional)" />
+          <input type="number" id="projDiscount" class="form-control mb-2 neumorphic-input" placeholder="Discount % (optional)" />
+          <input type="text" id="projCategory" class="form-control mb-2 neumorphic-input" placeholder="Category (e.g., AI, Web)" />
+          <textarea id="projDesc" rows="3" class="form-control mb-2 neumorphic-input" placeholder="Description"></textarea>
+          <textarea id="projFeatures" rows="2" class="form-control mb-2 neumorphic-input" placeholder="Features (comma separated)"></textarea>
+          <textarea id="projLanguages" rows="2" class="form-control mb-3 neumorphic-input" placeholder="Languages Used (comma separated)"></textarea>
+          <button class="neon-button w-100 mb-3" id="addProjectBtn">Add Project</button>
+          <h5>Existing Projects</h5>
+          <ul id="projectList" class="list-group" style="max-height:200px; overflow-y:auto;"></ul>
+          <button class="btn btn-danger mt-3 w-100" id="adminLogoutInModal">Logout</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Project Details Modal -->
+  <div class="modal fade" id="projectDetailsModal" tabindex="-1" aria-labelledby="modalTitle" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+      <div class="modal-content neumorphic-card p-4">
+        <div class="modal-header">
+          <h5 class="modal-title" id="modalTitle">Project Title</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <img id="modalImage" src="" alt="Project Image" class="img-fluid rounded mb-3" style="max-height:300px; object-fit:cover;">
+        <div id="modalDescription" class="px-2"></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+<!-- Google Form Link Section -->
+<div style="text-align:center; padding: 20px; background-color: #f5f5f5;">
+  <h3>Interested in Buying Projects?</h3>
+  <p>Fill out the form below and we'll contact you soon!</p>
+  <a href="https://docs.google.com/forms/d/e/1FAIpQLSfG1VyHTn8WHpy22A9kmbDfjnkfCT2Vk-hiXijNDQ0yoJNeWA/viewform?usp=header" target="_blank" 
+     style="display:inline-block; padding:10px 20px; background-color:#4285F4; color:#fff; text-decoration:none; border-radius:5px;">
+    Fill the Project Inquiry Form  </a>
+    <p style="color: white;">Admin Login  is only for admin ,no one will login accept me</p>
+</div>
+
+<!-- Footer -->
+<footer style="background-color:#222; color:#eee; text-align:center; padding:15px 10px; font-size:14px;">
+  &copy; 2025-2026 Projects. All rights reserved.
+</footer>
+
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  const STORAGE_KEY = "collegeProjects_v2";
+  const ADMIN_USERNAME = "chandu";
+  const ADMIN_PASSWORD = "chandu@2005";
+
+  let projects = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [
+    {
+      id: 1,
+      title: "Online Coding Battle Platform",
+      image: "https://th.bing.com/th/id/OIP.fv6yZOS20sHKKOaz-5CuLgHaHa?rs=1&pid=ImgDetMain",
+      price: 20000,
+      oldPrice: 25000,
+      discount: 20,
+      description: "An online platform where students can participate in coding battles and contests.",
+      features: ["Multiplayer mode", "Live leaderboard", "Real-time coding editor"],
+      languages: ["JavaScript", "Node.js", "React"],
+      category: "Web",
+      favorite: false
+    },
+    {
+      id: 2,
+      title: "AI-Powered Resume Builder",
+      image: "https://www.thestatesman.com/wp-content/uploads/2019/02/myresumeformat_pr_0.jpg",
+      price: 15000,
+      oldPrice: 20000,
+      discount: 20,
+      description: "Create professional resumes using AI-powered suggestions tailored for students.",
+      features: ["AI suggestions", "Template selection", "Export PDF"],
+      languages: ["Python", "Flask", "HTML/CSS"],
+      category: "AI",
+      favorite: false
+    }
+  ];
+
+  let isAdminLoggedIn = false;
+
+  const homeScreen = document.getElementById('homeScreen');
+  const searchInput = document.getElementById('searchInput');
+  const categoryFilter = document.getElementById('categoryFilter');
+  const sortProjects = document.getElementById('sortProjects');
+  const adminLoginBtn = document.getElementById('adminLoginBtn');
+  const adminLogoutBtn = document.getElementById('adminLogoutBtn');
+  const adminModal = new bootstrap.Modal(document.getElementById('adminModal'));
+
+  function saveProjects() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(projects));
+  }
+
+  function renderProjects() {
+    const filterText = searchInput.value.toLowerCase();
+    const selectedCategory = categoryFilter.value;
+    const sortOption = sortProjects.value;
+
+    let filtered = projects.filter(p =>
+      p.title.toLowerCase().includes(filterText) &&
+      (selectedCategory ? p.category === selectedCategory : true)
+    );
+
+    if (sortOption === 'title') {
+      filtered.sort((a, b) => a.title.localeCompare(b.title));
+    } else if (sortOption === 'priceLow') {
+      filtered.sort((a, b) => a.price - b.price);
+    } else if (sortOption === 'priceHigh') {
+      filtered.sort((a, b) => b.price - a.price);
+    }
+
+    homeScreen.innerHTML = "";
+    if (filtered.length === 0) {
+      homeScreen.innerHTML = `<p class="text-center fs-4 mt-4">No projects found.</p>`;
+      return;
+    }
+
+    filtered.forEach(project => {
+      const col = document.createElement('div');
+      col.className = "col-md-4";
+
+      col.innerHTML = `
+        <div class="glass-card h-100 d-flex flex-column">
+          <img src="${project.image}" alt="${project.title}" class="img-fluid rounded mb-3" style="height:180px; object-fit:cover;" />
+          <h5>${project.title}</h5>
+          <p class="text-truncate">${project.description}</p>
+          <button class="neon-button mt-auto align-self-start" onclick="openProjectDetails(${project.id})">View</button>
+        </div>
+      `;
+
+      homeScreen.appendChild(col);
+    });
+  }
+
+  function openProjectDetails(id) {
+    const project = projects.find(p => p.id === id);
+    if (!project) return;
+
+    document.getElementById('modalTitle').textContent = project.title;
+    document.getElementById('modalImage').src = project.image;
+    document.getElementById('modalDescription').innerHTML = `
+      <p>${project.description}</p>
+      <h6>Features:</h6>
+      <ul>${project.features.map(f => `<li>${f}</li>`).join('')}</ul>
+      <h6>Languages Used:</h6>
+      <ul>${project.languages.map(l => `<li>${l}</li>`).join('')}</ul>
+      <p><strong>Category:</strong> ${project.category}</p>
+      <p><strong>Price:</strong> ₹${project.price}${project.oldPrice ? ` <del>₹${project.oldPrice}</del>` : ''} ${project.discount ? `(${project.discount}% off)` : ''}</p>
+    `;
+
+    const projectDetailsModal = new bootstrap.Modal(document.getElementById('projectDetailsModal'));
+    projectDetailsModal.show();
+  }
+
+  // Admin Login
+  adminLoginBtn.addEventListener('click', () => {
+    adminModal.show();
+  });
+
+  document.getElementById('adminLoginSubmit').addEventListener('click', () => {
+    const username = document.getElementById('adminUsername').value.trim();
+    const password = document.getElementById('adminPassword').value.trim();
+
+    if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
+      isAdminLoggedIn = true;
+      alert('Admin logged in successfully!');
+      document.getElementById('loginSection').classList.add('d-none');
+      document.getElementById('projectManageSection').classList.remove('d-none');
+      adminLoginBtn.classList.add('d-none');
+      adminLogoutBtn.classList.remove('d-none');
+      renderAdminProjectList();
+    } else {
+      alert('Invalid Admin credentials!');
+    }
+  });
+
+  // Admin Logout
+  adminLogoutBtn.addEventListener('click', () => {
+    isAdminLoggedIn = false;
+    adminLoginBtn.classList.remove('d-none');
+    adminLogoutBtn.classList.add('d-none');
+    document.getElementById('loginSection').classList.remove('d-none');
+    document.getElementById('projectManageSection').classList.add('d-none');
+    adminModal.hide();
+  });
+
+  document.getElementById('adminLogoutInModal').addEventListener('click', () => {
+    isAdminLoggedIn = false;
+    adminLoginBtn.classList.remove('d-none');
+    adminLogoutBtn.classList.add('d-none');
+    document.getElementById('loginSection').classList.remove('d-none');
+    document.getElementById('projectManageSection').classList.add('d-none');
+    adminModal.hide();
+  });
+
+  // Render admin project list
+  function renderAdminProjectList() {
+    const projectList = document.getElementById('projectList');
+    projectList.innerHTML = "";
+    projects.forEach(proj => {
+      const li = document.createElement('li');
+      li.className = "list-group-item d-flex justify-content-between align-items-center";
+      li.textContent = proj.title;
+
+      const delBtn = document.createElement('button');
+      delBtn.className = "btn btn-sm btn-danger";
+      delBtn.textContent = "Delete";
+      delBtn.addEventListener('click', () => {
+        if (confirm(`Delete project "${proj.title}"?`)) {
+          projects = projects.filter(p => p.id !== proj.id);
+          saveProjects();
+          renderProjects();
+          renderAdminProjectList();
+        }
+      });
+
+      li.appendChild(delBtn);
+      projectList.appendChild(li);
+    });
+  }
+
+  // Add new project handler (with new fields)
+  document.getElementById('addProjectBtn').addEventListener('click', () => {
+    const title = document.getElementById('projTitle').value.trim();
+    const image = document.getElementById('projImage').value.trim();
+    const price = Number(document.getElementById('projPrice').value);
+    const oldPrice = Number(document.getElementById('projOldPrice').value);
+    const discount = Number(document.getElementById('projDiscount').value);
+    const category = document.getElementById('projCategory').value.trim();
+    const description = document.getElementById('projDesc').value.trim();
+    const features = document.getElementById('projFeatures').value.trim().split(',').map(f => f.trim()).filter(f => f);
+    const languages = document.getElementById('projLanguages').value.trim().split(',').map(l => l.trim()).filter(l => l);
+
+    if(!title || !image || !price || !category || !description) {
+      alert('Please fill all required fields.');
+      return;
+    }
+
+    const newProject = {
+      id: projects.length ? Math.max(...projects.map(p => p.id)) + 1 : 1,
+      title, image, price, oldPrice: oldPrice || null, discount: discount || null,
+      category, description, features, languages,
+      favorite: false
+    };
+
+    projects.push(newProject);
+    saveProjects();
+    renderProjects();
+    renderAdminProjectList();
+
+    // Clear inputs
+    document.getElementById('projTitle').value = '';
+    document.getElementById('projImage').value = '';
+    document.getElementById('projPrice').value = '';
+    document.getElementById('projOldPrice').value = '';
+    document.getElementById('projDiscount').value = '';
+    document.getElementById('projCategory').value = '';
+    document.getElementById('projDesc').value = '';
+    document.getElementById('projFeatures').value = '';
+    document.getElementById('projLanguages').value = '';
+  });
+
+  // Filters and sorting event listeners
+  searchInput.addEventListener('input', renderProjects);
+  categoryFilter.addEventListener('change', renderProjects);
+  sortProjects.addEventListener('change', renderProjects);
+
+  // Initial render
+  renderProjects();
+</script>
+</body>
+</html>
